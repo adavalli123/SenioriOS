@@ -757,39 +757,236 @@ struct LocalizedHelperView: View {
 ### Q5: How do you handle user input with buttons?
 
 **Answer:**
+SwiftUI's Button represents a sophisticated **event handling system** that bridges user interactions with application state changes. Understanding its architecture is crucial for building responsive interfaces.
+
+**Button Architecture and Event Flow:**
+
+The Button component implements several key patterns:
+
+1. **Action-Based Architecture**: Unlike UIKit's target-action pattern, SwiftUI uses **closures** for immediate, type-safe event handling
+2. **Declarative Styling**: Button appearance is described declaratively rather than configured imperatively
+3. **Automatic State Management**: SwiftUI handles press states, accessibility, and platform-specific behaviors automatically
+
+**Core Button Concepts:**
+
 ```swift
-struct ButtonExamples: View {
+struct ComprehensiveButtonExample: View {
     @State private var counter = 0
+    @State private var isProcessing = false
+    @State private var buttonScale: CGFloat = 1.0
     
     var body: some View {
-        VStack {
-            // Basic button
-            Button("Tap me") {
+        VStack(spacing: 20) {
+            // 1. BASIC BUTTON - Fundamental Pattern
+            Button("Basic Increment") {
+                // Action closure - executed on main thread
                 counter += 1
             }
             
-            // Custom styling
-            Button(action: { counter += 1 }) {
-                Text("Custom Button")
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
+            // 2. SEPARATED ACTION AND LABEL - Advanced Pattern
+            Button(action: incrementCounter) {
+                // Custom label view hierarchy
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Custom Increment")
+                        .fontWeight(.semibold)
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.blue)
+                )
             }
             
-            // Button with image
-            Button(action: { counter += 1 }) {
+            // 3. CONDITIONAL BUTTON - State-Dependent Behavior
+            Button(action: performAsyncAction) {
                 HStack {
-                    Image(systemName: "plus")
-                    Text("Add")
+                    if isProcessing {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "network")
+                    }
+                    Text(isProcessing ? "Processing..." : "Network Action")
+                }
+            }
+            .disabled(isProcessing) // Automatic accessibility handling
+            
+            // 4. GESTURE-ENHANCED BUTTON - Advanced Interactions
+            Button("Press & Hold") {
+                triggerHapticFeedback()
+            }
+            .scaleEffect(buttonScale)
+            .onLongPressGesture(minimumDuration: 0.5) {
+                // Long press action
+                performLongPressAction()
+            }
+            .pressEvents { isPressed in
+                // Visual feedback during press
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    buttonScale = isPressed ? 0.95 : 1.0
                 }
             }
             
+            // 5. ROLE-BASED BUTTON - Semantic Meaning
+            Button("Delete", role: .destructive) {
+                deleteAction()
+            }
+            
             Text("Count: \(counter)")
+                .font(.title2)
+                .foregroundColor(.primary)
+        }
+        .padding()
+    }
+    
+    // MARK: - Action Handlers
+    
+    private func incrementCounter() {
+        // Explicit action function - better for complex logic
+        withAnimation(.spring()) {
+            counter += 1
+        }
+    }
+    
+    private func performAsyncAction() {
+        isProcessing = true
+        
+        // Simulate async operation
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+            
+            await MainActor.run {
+                isProcessing = false
+                counter += 10
+            }
+        }
+    }
+    
+    private func performLongPressAction() {
+        // Long press specific logic
+        counter += 5
+        triggerHapticFeedback()
+    }
+    
+    private func deleteAction() {
+        // Destructive action
+        counter = 0
+    }
+    
+    private func triggerHapticFeedback() {
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+    }
+}
+
+// MARK: - Custom Button Style for Reusability
+struct PrimaryButtonStyle: ButtonStyle {
+    let isDestructive: Bool
+    
+    init(isDestructive: Bool = false) {
+        self.isDestructive = isDestructive
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundColor(.white)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isDestructive ? Color.red : Color.blue)
+                    .opacity(configuration.isPressed ? 0.8 : 1.0)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Press Events Extension
+extension View {
+    func pressEvents(onPress: @escaping (Bool) -> Void) -> some View {
+        self.onLongPressGesture(
+            minimumDuration: 0,
+            maximumDistance: .infinity,
+            pressing: onPress,
+            perform: {}
+        )
+    }
+}
+```
+
+**Advanced Button Patterns:**
+
+**1. Button State Management:**
+```swift
+struct StatefulButton: View {
+    @State private var buttonState: ButtonState = .idle
+    
+    enum ButtonState {
+        case idle, loading, success, error
+        
+        var title: String {
+            switch self {
+            case .idle: return "Submit"
+            case .loading: return "Submitting..."
+            case .success: return "Success!"
+            case .error: return "Retry"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .idle: return .blue
+            case .loading: return .gray
+            case .success: return .green
+            case .error: return .red
+            }
+        }
+    }
+    
+    var body: some View {
+        Button(buttonState.title) {
+            performAction()
+        }
+        .buttonStyle(PrimaryButtonStyle())
+        .disabled(buttonState == .loading)
+    }
+    
+    private func performAction() {
+        buttonState = .loading
+        
+        // Simulate API call
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            buttonState = Bool.random() ? .success : .error
+            
+            // Reset after showing result
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                if buttonState == .success {
+                    buttonState = .idle
+                }
+            }
         }
     }
 }
 ```
+
+**Key Concepts & Notes:**
+
+> **Action Closure**: A closure that executes when the button is pressed. Always runs on the main thread by default.
+
+> **Button Role**: iOS 15+ semantic roles (`.destructive`, `.cancel`) that provide automatic styling and accessibility hints.
+
+> **Button Style**: A protocol that defines how buttons appear and behave. Can be applied to multiple buttons for consistency.
+
+> **State-Driven UI**: Button appearance and behavior change based on application state, maintaining consistency with SwiftUI's declarative nature.
+
+**Performance Considerations:**
+- **Action Closures**: Keep lightweight; use `Task` for async operations
+- **State Updates**: Batch related state changes to minimize re-renders
+- **Custom Styles**: Create reusable button styles to avoid code duplication
+- **Accessibility**: SwiftUI automatically handles VoiceOver and button semantics
 
 **Follow-up Questions:**
 - How do you disable a button conditionally?
@@ -799,38 +996,384 @@ struct ButtonExamples: View {
 ### Q6: How do you work with Lists in SwiftUI?
 
 **Answer:**
+SwiftUI's List is a **high-performance, virtualized container** that efficiently displays scrollable collections of data. It represents one of the most sophisticated components in SwiftUI, handling complex scenarios like **data identity**, **performance optimization**, and **platform-specific behaviors**.
+
+**List Architecture and Virtualization:**
+
+Lists implement **virtualization** (also called **cell reuse**) automatically:
+- Only visible rows are rendered in memory
+- Rows are reused as they scroll in/out of view
+- This enables smooth scrolling with thousands of items
+- Memory usage remains constant regardless of data size
+
+**Comprehensive List Implementation:**
+
 ```swift
-struct ListExamples: View {
-    let items = ["Apple", "Banana", "Cherry"]
-    @State private var todos = ["Learn SwiftUI", "Build an app"]
-    
-    var body: some View {
-        NavigationView {
-            List {
-                // Static content
-                Section("Fruits") {
-                    ForEach(items, id: \.self) { item in
-                        Text(item)
-                    }
-                }
-                
-                // Dynamic content with deletion
-                Section("Todos") {
-                    ForEach(todos, id: \.self) { todo in
-                        Text(todo)
-                    }
-                    .onDelete(perform: deleteTodos)
+struct AdvancedListExample: View {
+    // MARK: - Data Models
+    struct TodoItem: Identifiable, Hashable {
+        let id = UUID()
+        var title: String
+        var isCompleted: Bool = false
+        var priority: Priority = .medium
+        var category: String
+        
+        enum Priority: String, CaseIterable {
+            case low = "Low"
+            case medium = "Medium" 
+            case high = "High"
+            
+            var color: Color {
+                switch self {
+                case .low: return .green
+                case .medium: return .orange
+                case .high: return .red
                 }
             }
-            .navigationTitle("My List")
         }
     }
     
-    func deleteTodos(at offsets: IndexSet) {
-        todos.remove(atOffsets: offsets)
+    // MARK: - State
+    @State private var todos: [TodoItem] = [
+        TodoItem(title: "Learn SwiftUI", category: "Development"),
+        TodoItem(title: "Build an app", category: "Development"),
+        TodoItem(title: "Go grocery shopping", category: "Personal"),
+        TodoItem(title: "Write documentation", category: "Work")
+    ]
+    
+    @State private var searchText = ""
+    @State private var showingAddSheet = false
+    @State private var selectedCategory = "All"
+    
+    // MARK: - Computed Properties
+    private var categories: [String] {
+        ["All"] + Array(Set(todos.map(\.category))).sorted()
+    }
+    
+    private var filteredTodos: [TodoItem] {
+        todos
+            .filter { selectedCategory == "All" || $0.category == selectedCategory }
+            .filter { searchText.isEmpty || $0.title.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    private var groupedTodos: [String: [TodoItem]] {
+        Dictionary(grouping: filteredTodos) { $0.category }
+    }
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // MARK: - Category Filter
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(categories, id: \.self) { category in
+                            CategoryButton(
+                                title: category,
+                                isSelected: selectedCategory == category
+                            ) {
+                                selectedCategory = category
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical, 8)
+                
+                // MARK: - Main List
+                List {
+                    // 1. STATIC CONTENT SECTION
+                    Section {
+                        HStack {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.blue)
+                            Text("Total tasks: \(filteredTodos.count)")
+                            Spacer()
+                            Text("Completed: \(filteredTodos.filter(\.isCompleted).count)")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    // 2. GROUPED DYNAMIC CONTENT
+                    ForEach(groupedTodos.keys.sorted(), id: \.self) { category in
+                        Section(category) {
+                            ForEach(groupedTodos[category] ?? []) { todo in
+                                TodoRowView(
+                                    todo: todo,
+                                    onToggle: { toggleTodo(todo) },
+                                    onEdit: { editTodo(todo) }
+                                )
+                            }
+                            .onDelete { indexSet in
+                                deleteTodos(from: category, at: indexSet)
+                            }
+                            .onMove { from, to in
+                                moveTodos(from: from, to: to)
+                            }
+                        }
+                    }
+                    
+                    // 3. LAZY LOADING SECTION (for large datasets)
+                    if filteredTodos.count > 50 {
+                        Section("Load More") {
+                            HStack {
+                                Spacer()
+                                Button("Load More Items") {
+                                    loadMoreItems()
+                                }
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped) // Platform-appropriate styling
+                .searchable(text: $searchText, prompt: "Search todos")
+                .refreshable {
+                    await refreshData()
+                }
+            }
+            .navigationTitle("Advanced List")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        showingAddSheet = true
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    EditButton() // Automatic edit mode toggle
+                }
+            }
+        }
+        .sheet(isPresented: $showingAddSheet) {
+            AddTodoSheet { newTodo in
+                todos.append(newTodo)
+            }
+        }
+    }
+    
+    // MARK: - Action Handlers
+    
+    private func toggleTodo(_ todo: TodoItem) {
+        if let index = todos.firstIndex(where: { $0.id == todo.id }) {
+            withAnimation(.spring()) {
+                todos[index].isCompleted.toggle()
+            }
+        }
+    }
+    
+    private func editTodo(_ todo: TodoItem) {
+        // Implementation for editing
+        print("Edit todo: \(todo.title)")
+    }
+    
+    private func deleteTodos(from category: String, at offsets: IndexSet) {
+        let categoryTodos = groupedTodos[category] ?? []
+        let todosToDelete = offsets.map { categoryTodos[$0] }
+        
+        withAnimation {
+            todos.removeAll { todo in
+                todosToDelete.contains { $0.id == todo.id }
+            }
+        }
+    }
+    
+    private func moveTodos(from source: IndexSet, to destination: Int) {
+        withAnimation {
+            todos.move(fromOffsets: source, toOffset: destination)
+        }
+    }
+    
+    private func loadMoreItems() {
+        // Simulate loading more data
+        let newTodos = (1...10).map { index in
+            TodoItem(
+                title: "Generated Task \(index)",
+                category: "Generated"
+            )
+        }
+        
+        withAnimation {
+            todos.append(contentsOf: newTodos)
+        }
+    }
+    
+    @MainActor
+    private func refreshData() async {
+        // Simulate network refresh
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        
+        // Refresh logic here
+        print("Data refreshed")
+    }
+}
+
+// MARK: - Supporting Views
+
+struct TodoRowView: View {
+    let todo: AdvancedListExample.TodoItem
+    let onToggle: () -> Void
+    let onEdit: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Completion Toggle
+            Button(action: onToggle) {
+                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(todo.isCompleted ? .green : .gray)
+                    .font(.title2)
+            }
+            .buttonStyle(.plain)
+            
+            // Content
+            VStack(alignment: .leading, spacing: 4) {
+                Text(todo.title)
+                    .font(.body)
+                    .strikethrough(todo.isCompleted)
+                    .foregroundColor(todo.isCompleted ? .secondary : .primary)
+                
+                HStack {
+                    Text(todo.priority.rawValue)
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(todo.priority.color.opacity(0.2))
+                        .foregroundColor(todo.priority.color)
+                        .cornerRadius(8)
+                    
+                    Spacer()
+                    
+                    Text(todo.category)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            // Edit Button
+            Button(action: onEdit) {
+                Image(systemName: "pencil")
+                    .foregroundColor(.blue)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 4)
+        .contentShape(Rectangle()) // Makes entire row tappable
+    }
+}
+
+struct CategoryButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .foregroundColor(isSelected ? .white : .primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(isSelected ? Color.blue : Color.gray.opacity(0.2))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct AddTodoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var title = ""
+    @State private var category = ""
+    @State private var priority: AdvancedListExample.TodoItem.Priority = .medium
+    
+    let onSave: (AdvancedListExample.TodoItem) -> Void
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                TextField("Title", text: $title)
+                TextField("Category", text: $category)
+                
+                Picker("Priority", selection: $priority) {
+                    ForEach(AdvancedListExample.TodoItem.Priority.allCases, id: \.self) { priority in
+                        Text(priority.rawValue).tag(priority)
+                    }
+                }
+            }
+            .navigationTitle("New Todo")
+            .navigationBarItems(
+                leading: Button("Cancel") { dismiss() },
+                trailing: Button("Save") {
+                    let newTodo = AdvancedListExample.TodoItem(
+                        title: title,
+                        category: category.isEmpty ? "General" : category
+                    )
+                    onSave(newTodo)
+                    dismiss()
+                }
+                .disabled(title.isEmpty)
+            )
+        }
     }
 }
 ```
+
+**Key List Concepts & Performance Notes:**
+
+> **Identifiable Protocol**: Essential for SwiftUI to track individual items across updates. Use stable, unique identifiers (preferably UUID).
+
+> **Virtualization**: Lists automatically reuse cells for performance. Only visible items consume memory.
+
+> **ForEach vs List**: ForEach generates views for each item; List provides the scrollable container and virtualization.
+
+> **IndexSet**: Used in deletion operations to represent multiple selected indices efficiently.
+
+> **Sectioned Lists**: Groups related content and improves navigation for large datasets.
+
+**Advanced List Features:**
+
+**1. Custom List Styles:**
+```swift
+extension View {
+    func customListStyle() -> some View {
+        self.listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.gray.opacity(0.05))
+    }
+}
+```
+
+**2. Swipe Actions:**
+```swift
+.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+    Button("Delete", role: .destructive) {
+        deleteTodo()
+    }
+    
+    Button("Archive") {
+        archiveTodo()
+    }
+    .tint(.orange)
+}
+.swipeActions(edge: .leading) {
+    Button("Star") {
+        starTodo()
+    }
+    .tint(.yellow)
+}
+```
+
+**Performance Optimization Strategies:**
+- **Use Identifiable**: Enables efficient diffing and animations
+- **Minimize Row Complexity**: Keep row views lightweight
+- **Lazy Loading**: Load data on demand for large datasets
+- **Stable IDs**: Avoid using array indices as identifiers
+- **Batch Updates**: Group related changes with animation blocks
 
 **Follow-up Questions:**
 - How do you implement swipe actions in a List?
@@ -1419,44 +1962,424 @@ struct RestorableView: View {
 ### Q11: What is @Binding and how does it work?
 
 **Answer:**
-`@Binding` creates a two-way connection to a value that's owned by another view:
+`@Binding` represents SwiftUI's **sophisticated reference system** for creating **two-way data connections** between views while maintaining the unidirectional data flow principle. It's a **property wrapper that creates a reference**, not a copy, allowing child views to mutate parent state safely.
+
+**The Binding Architecture:**
+
+Binding implements a **proxy pattern** that provides:
+1. **Indirect Access**: Child views access parent state through a controlled interface
+2. **Two-Way Synchronization**: Changes propagate both up and down the view hierarchy
+3. **Type Safety**: Compile-time guarantees about data types and access patterns
+4. **Memory Efficiency**: No data duplication, only reference sharing
+
+**Comprehensive Binding Implementation:**
 
 ```swift
-struct ParentView: View {
-    @State private var isOn = false
+// MARK: - Advanced Binding Patterns
+
+struct AdvancedBindingExample: View {
+    // MARK: - Parent State
+    @State private var userProfile = UserProfile(
+        name: "John Doe",
+        email: "john@example.com",
+        age: 30,
+        preferences: UserPreferences(
+            notifications: true,
+            darkMode: false,
+            language: "English"
+        )
+    )
+    
+    @State private var selectedTab = 0
+    @State private var searchText = ""
+    @State private var isEditing = false
     
     var body: some View {
-        VStack {
-            Text("Switch is \(isOn ? "ON" : "OFF")")
-            ToggleView(isOn: $isOn) // Pass binding with $
+        NavigationView {
+            VStack(spacing: 20) {
+                // MARK: - 1. BASIC BINDING - Direct Property Access
+                BasicInfoView(name: $userProfile.name, email: $userProfile.email)
+                
+                // MARK: - 2. NESTED BINDING - Deep Property Access
+                PreferencesView(preferences: $userProfile.preferences)
+                
+                // MARK: - 3. COMPUTED BINDING - Transform Data
+                AgeSliderView(
+                    age: Binding(
+                        get: { userProfile.age },
+                        set: { newAge in
+                            // Validation logic in binding
+                            userProfile.age = max(0, min(120, newAge))
+                        }
+                    )
+                )
+                
+                // MARK: - 4. CONDITIONAL BINDING - Optional Handling
+                if isEditing {
+                    EditModeView(
+                        isEditing: $isEditing,
+                        profile: $userProfile
+                    )
+                } else {
+                    DisplayModeView(
+                        profile: userProfile,
+                        onEdit: { isEditing = true }
+                    )
+                }
+                
+                // MARK: - 5. COLLECTION BINDING - Array Elements
+                TabSelectionView(selectedTab: $selectedTab)
+                
+                // MARK: - 6. TRANSFORMED BINDING - Data Conversion
+                SearchView(
+                    searchText: Binding(
+                        get: { searchText },
+                        set: { newValue in
+                            // Transform input - always lowercase
+                            searchText = newValue.lowercased()
+                        }
+                    )
+                )
+                
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Binding Examples")
         }
     }
 }
 
-struct ToggleView: View {
-    @Binding var isOn: Bool // Receive binding
+// MARK: - Data Models
+
+struct UserProfile {
+    var name: String
+    var email: String
+    var age: Int
+    var preferences: UserPreferences
+}
+
+struct UserPreferences {
+    var notifications: Bool
+    var darkMode: Bool
+    var language: String
+}
+
+// MARK: - Child Views with Bindings
+
+struct BasicInfoView: View {
+    @Binding var name: String
+    @Binding var email: String
     
     var body: some View {
-        Toggle("Toggle me", isOn: $isOn)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Basic Information")
+                .font(.headline)
+            
+            // Direct binding usage
+            TextField("Name", text: $name)
+                .textFieldStyle(.roundedBorder)
+            
+            TextField("Email", text: $email)
+                .textFieldStyle(.roundedBorder)
+                .keyboardType(.emailAddress)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+struct PreferencesView: View {
+    @Binding var preferences: UserPreferences
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Preferences")
+                .font(.headline)
+            
+            // Nested property bindings
+            Toggle("Notifications", isOn: $preferences.notifications)
+            Toggle("Dark Mode", isOn: $preferences.darkMode)
+            
+            // Custom picker with binding
+            Picker("Language", selection: $preferences.language) {
+                Text("English").tag("English")
+                Text("Spanish").tag("Spanish")
+                Text("French").tag("French")
+            }
+            .pickerStyle(.segmented)
+        }
+        .padding()
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+struct AgeSliderView: View {
+    @Binding var age: Int
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Age: \(age)")
+                .font(.headline)
+            
+            // Binding with type conversion (Int to Double)
+            Slider(
+                value: Binding(
+                    get: { Double(age) },
+                    set: { age = Int($0) }
+                ),
+                in: 0...120,
+                step: 1
+            )
+        }
+        .padding()
+        .background(Color.green.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+struct EditModeView: View {
+    @Binding var isEditing: Bool
+    @Binding var profile: UserProfile
+    
+    // Local state for temporary editing
+    @State private var tempName: String = ""
+    @State private var tempEmail: String = ""
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Edit Mode")
+                .font(.headline)
+            
+            TextField("Name", text: $tempName)
+                .textFieldStyle(.roundedBorder)
+            
+            TextField("Email", text: $tempEmail)
+                .textFieldStyle(.roundedBorder)
+            
+            HStack {
+                Button("Cancel") {
+                    isEditing = false
+                    // Restore original values
+                    tempName = profile.name
+                    tempEmail = profile.email
+                }
+                .foregroundColor(.red)
+                
+                Spacer()
+                
+                Button("Save") {
+                    // Validate and save
+                    if !tempName.isEmpty && tempEmail.contains("@") {
+                        profile.name = tempName
+                        profile.email = tempEmail
+                        isEditing = false
+                    }
+                }
+                .foregroundColor(.blue)
+            }
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(8)
+        .onAppear {
+            // Initialize temp values
+            tempName = profile.name
+            tempEmail = profile.email
+        }
+    }
+}
+
+struct DisplayModeView: View {
+    let profile: UserProfile
+    let onEdit: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Display Mode")
+                .font(.headline)
+            
+            Text("Name: \(profile.name)")
+            Text("Email: \(profile.email)")
+            Text("Age: \(profile.age)")
+            
+            Button("Edit", action: onEdit)
+                .foregroundColor(.blue)
+        }
+        .padding()
+        .background(Color.purple.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+struct TabSelectionView: View {
+    @Binding var selectedTab: Int
+    let tabs = ["Home", "Profile", "Settings", "About"]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Tab Selection")
+                .font(.headline)
+            
+            Picker("Tab", selection: $selectedTab) {
+                ForEach(0..<tabs.count, id: \.self) { index in
+                    Text(tabs[index]).tag(index)
+                }
+            }
+            .pickerStyle(.segmented)
+            
+            Text("Selected: \(tabs[selectedTab])")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.yellow.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+struct SearchView: View {
+    @Binding var searchText: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Search (Auto-lowercase)")
+                .font(.headline)
+            
+            TextField("Search...", text: $searchText)
+                .textFieldStyle(.roundedBorder)
+            
+            Text("Current: '\(searchText)'")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.red.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Advanced Binding Utilities
+
+extension Binding {
+    /// Creates a binding that transforms the value using provided closures
+    func map<T>(
+        get: @escaping (Value) -> T,
+        set: @escaping (T) -> Value
+    ) -> Binding<T> {
+        Binding<T>(
+            get: { get(self.wrappedValue) },
+            set: { self.wrappedValue = set($0) }
+        )
+    }
+    
+    /// Creates a binding that only updates when the new value is different
+    func removeDuplicates() -> Binding<Value> where Value: Equatable {
+        Binding(
+            get: { self.wrappedValue },
+            set: { newValue in
+                if newValue != self.wrappedValue {
+                    self.wrappedValue = newValue
+                }
+            }
+        )
+    }
+    
+    /// Creates a binding with validation
+    func validated(
+        _ isValid: @escaping (Value) -> Bool
+    ) -> Binding<Value> {
+        Binding(
+            get: { self.wrappedValue },
+            set: { newValue in
+                if isValid(newValue) {
+                    self.wrappedValue = newValue
+                }
+            }
+        )
+    }
+}
+
+// MARK: - Usage Examples of Advanced Bindings
+
+struct AdvancedBindingUtilities: View {
+    @State private var temperature: Double = 20.0
+    @State private var username: String = ""
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Temperature with Celsius/Fahrenheit conversion
+            TemperatureView(
+                celsius: $temperature.map(
+                    get: { $0 },
+                    set: { $0 }
+                ),
+                fahrenheit: $temperature.map(
+                    get: { $0 * 9/5 + 32 },
+                    set: { ($0 - 32) * 5/9 }
+                )
+            )
+            
+            // Username with validation (no spaces)
+            TextField(
+                "Username (no spaces)",
+                text: $username.validated { !$0.contains(" ") }
+            )
+            .textFieldStyle(.roundedBorder)
+            
+            Text("Username: '\(username)'")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+    }
+}
+
+struct TemperatureView: View {
+    @Binding var celsius: Double
+    @Binding var fahrenheit: Double
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("°C:")
+                TextField("Celsius", value: $celsius, format: .number)
+                    .textFieldStyle(.roundedBorder)
+            }
+            
+            HStack {
+                Text("°F:")
+                TextField("Fahrenheit", value: $fahrenheit, format: .number)
+                    .textFieldStyle(.roundedBorder)
+            }
+        }
     }
 }
 ```
 
-**Creating custom bindings:**
-```swift
-struct CustomBindingExample: View {
-    @State private var value = 0
-    
-    var body: some View {
-        let binding = Binding(
-            get: { self.value },
-            set: { self.value = $0 }
-        )
-        
-        Stepper("Value: \(value)", value: binding, in: 0...100)
-    }
-}
-```
+**Key Binding Concepts & Notes:**
+
+> **Property Wrapper**: `@Binding` is a property wrapper that creates a reference to external state, not a copy.
+
+> **Projected Value**: The `$` syntax accesses the binding's projected value, which is the Binding itself.
+
+> **Two-Way Flow**: Data flows down through binding reads, and up through binding writes.
+
+> **Reference Semantics**: Unlike `@State`, `@Binding` doesn't own the data—it references data owned elsewhere.
+
+> **Custom Bindings**: You can create bindings with custom get/set logic for data transformation and validation.
+
+**Binding Performance Considerations:**
+- **Minimal Overhead**: Bindings are lightweight references, not data copies
+- **Targeted Updates**: Only views that read the bound value are invalidated on changes
+- **Lazy Evaluation**: Binding getters are only called when the value is actually accessed
+- **Batch Updates**: Multiple binding changes within the same update cycle are batched
+
+**Common Binding Patterns:**
+1. **Direct Property Binding**: `$property` for simple state sharing
+2. **Nested Property Binding**: `$object.property` for complex object properties
+3. **Computed Binding**: Custom get/set logic for data transformation
+4. **Optional Binding**: Handling nullable values safely
+5. **Collection Element Binding**: Binding to specific array or dictionary elements
 
 **Follow-up Questions:**
 - How do you create a one-way binding?
