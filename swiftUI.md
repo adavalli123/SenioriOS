@@ -1656,4 +1656,2410 @@ This deep analysis demonstrates how SwiftUI's lifecycle is fundamentally differe
 
 ---
 
-Let me continue with the remaining questions with the same depth of analysis. Would you like me to continue with the Views and UI Components section next?
+## Views and UI Components
+
+### Q5: How do you create and customize Text views?
+
+**Deep Technical Analysis:**
+
+Text in SwiftUI is not merely a simple string display component—it's a **sophisticated typography engine** that integrates deeply with the platform's text rendering pipeline, accessibility systems, and internationalization frameworks. Understanding Text requires knowledge of **Core Text**, **Dynamic Type**, **localization systems**, and **AttributedString** internals.
+
+**Typography Engine Deep Dive:**
+
+```swift
+// Text rendering pipeline analysis
+struct TextRenderingAnalysis: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            // 1. Basic text rendering pipeline
+            basicTextExample
+            
+            // 2. Advanced typography features
+            advancedTypographyExample
+            
+            // 3. Dynamic type integration
+            dynamicTypeExample
+            
+            // 4. Accessibility integration
+            accessibilityExample
+            
+            // 5. Internationalization features
+            internationalizationExample
+            
+            // 6. Performance optimization patterns
+            performanceOptimizedText
+        }
+    }
+    
+    // Basic text rendering demonstrates the full pipeline
+    private var basicTextExample: some View {
+        Text("Basic Text Rendering")
+            .font(.title)
+            .foregroundColor(.primary)
+        // Internal pipeline:
+        // 1. String → AttributedString conversion
+        // 2. Font resolution (system fonts, custom fonts)
+        // 3. Glyph generation using Core Text
+        // 4. Layout calculation (line breaking, justification)
+        // 5. Rendering context preparation
+        // 6. GPU texture creation for glyphs
+        // 7. Composition with view hierarchy
+    }
+    
+    // Advanced typography showcases Core Text integration
+    private var advancedTypographyExample: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Concatenated attributed text
+            (Text("Bold ").fontWeight(.bold) +
+             Text("and ").fontWeight(.regular) +
+             Text("Italic").italic() +
+             Text(" combined"))
+                .font(.body)
+            
+            // Custom font with fallbacks
+            Text("Custom Typography")
+                .font(.custom("Helvetica Neue", size: 18, relativeTo: .body))
+                .fontDesign(.serif) // iOS 16+ font design system
+            
+            // Advanced text styling
+            Text("Advanced Styling")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .kerning(1.2) // Character spacing
+                .tracking(0.5) // Letter spacing
+                .baselineOffset(2) // Baseline adjustment
+            
+            // Text with custom attributes (iOS 15+)
+            Text(AttributedString("Attributed Text", attributes: AttributeContainer([
+                .font: UIFont.systemFont(ofSize: 16, weight: .medium),
+                .foregroundColor: UIColor.systemBlue,
+                .underlineStyle: NSUnderlineStyle.single.rawValue
+            ])))
+        }
+    }
+    
+    // Dynamic Type demonstrates accessibility integration
+    private var dynamicTypeExample: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Dynamic Type Integration")
+                .font(.headline)
+            
+            // Semantic font sizes (automatically scale)
+            Group {
+                Text("Large Title").font(.largeTitle)
+                Text("Title 1").font(.title)
+                Text("Title 2").font(.title2)
+                Text("Title 3").font(.title3)
+                Text("Headline").font(.headline)
+                Text("Subheadline").font(.subheadline)
+                Text("Body").font(.body)
+                Text("Callout").font(.callout)
+                Text("Footnote").font(.footnote)
+                Text("Caption 1").font(.caption)
+                Text("Caption 2").font(.caption2)
+            }
+            
+            // Custom fonts with Dynamic Type support
+            Text("Custom with scaling")
+                .font(.custom("Georgia", size: 16, relativeTo: .body))
+                .dynamicTypeSize(.small ... .accessibility3) // Limit scaling range
+            
+            // Responsive text based on available space
+            GeometryReader { geometry in
+                Text("Responsive Text That Adapts to Available Space")
+                    .font(.system(size: min(geometry.size.width / 20, 24)))
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(height: 100)
+        }
+    }
+    
+    // Accessibility integration shows VoiceOver and assistive technology support
+    private var accessibilityExample: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Accessibility Features")
+                .font(.headline)
+            
+            // Basic accessibility
+            Text("Accessible content")
+                .accessibilityLabel("Custom accessibility label for screen readers")
+                .accessibilityHint("Provides additional context for the content")
+                .accessibilityAddTraits(.isHeader)
+            
+            // Rich accessibility with attributed strings
+            Text("Complex content with multiple parts")
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Combined accessibility description")
+            
+            // Accessibility with custom actions
+            Text("Interactive accessibility")
+                .accessibilityAction(.default) {
+                    // Custom action for assistive technologies
+                    performAccessibilityAction()
+                }
+                .accessibilityAction(.magicTap) {
+                    // Magic tap gesture handling
+                    handleMagicTap()
+                }
+            
+            // VoiceOver pronunciation guidance
+            Text("Specialized terminology")
+                .speechSpellsOutCharacters() // Spell out for clarity
+                .speechAdjustedPitch(0.8) // Adjust speech pitch
+                .speechAnnouncementsQueued() // Queue announcements
+        }
+    }
+    
+    // Internationalization demonstrates localization engine integration
+    private var internationalizationExample: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Internationalization")
+                .font(.headline)
+            
+            // Basic localization
+            Text("localized_string_key")
+                .environment(\.locale, Locale(identifier: "es"))
+            
+            // String interpolation with localization
+            Text("welcome_message \("John")")
+            
+            // Formatted strings with localization
+            Text("price_format \(29.99, format: .currency(code: "USD"))")
+            
+            // Pluralization support (iOS 15+)
+            Text("^[\(3) item](inflect: true)")
+            
+            // Right-to-left language support
+            Text("نص باللغة العربية")
+                .environment(\.layoutDirection, .rightToLeft)
+            
+            // Markdown support with localization (iOS 15+)
+            Text("**Bold** and *italic* text")
+                .environment(\.locale, Locale(identifier: "fr"))
+        }
+    }
+    
+    // Performance optimization patterns for text rendering
+    private var performanceOptimizedText: some View {
+        VStack(spacing: 10) {
+            Text("Performance Optimization")
+                .font(.headline)
+            
+            // ✅ Efficient: Static text
+            Text("Static efficient text")
+                .font(.body)
+            
+            // ✅ Efficient: Pre-computed attributed string
+            Text(precomputedAttributedString)
+            
+            // ❌ Inefficient: Dynamic string computation in body
+            // Text(computeExpensiveString()) // Don't do this
+            
+            // ✅ Efficient: Use @State for dynamic content
+            Text(dynamicContent)
+                .font(.body)
+                .lineLimit(3)
+                .truncationMode(.tail)
+        }
+    }
+    
+    // Pre-computed attributed string for performance
+    private var precomputedAttributedString: AttributedString {
+        var attributedString = AttributedString("Performance optimized text")
+        attributedString.font = .headline
+        attributedString.foregroundColor = .blue
+        return attributedString
+    }
+    
+    @State private var dynamicContent = "Dynamic content"
+    
+    private func performAccessibilityAction() {
+        // Handle accessibility action
+        print("Accessibility action performed")
+    }
+    
+    private func handleMagicTap() {
+        // Handle magic tap gesture
+        print("Magic tap handled")
+    }
+}
+```
+
+**Text Rendering Performance Analysis:**
+
+```swift
+// Text rendering performance deep dive
+struct TextPerformanceAnalysis: View {
+    @State private var largeTextContent: [String] = []
+    @State private var isOptimized = true
+    
+    var body: some View {
+        VStack {
+            Toggle("Use Optimization", isOn: $isOptimized)
+            
+            ScrollView {
+                LazyVStack {
+                    ForEach(largeTextContent.indices, id: \.self) { index in
+                        if isOptimized {
+                            OptimizedTextRow(content: largeTextContent[index])
+                        } else {
+                            InefficientTextRow(content: largeTextContent[index])
+                        }
+                    }
+                }
+            }
+        }
+        .onAppear {
+            generateLargeTextContent()
+        }
+    }
+    
+    private func generateLargeTextContent() {
+        largeTextContent = (1...1000).map { "Text content item \($0) with some longer description" }
+    }
+}
+
+// ✅ Optimized text row
+struct OptimizedTextRow: View {
+    let content: String
+    
+    var body: some View {
+        Text(content)
+            .font(.body) // Static font
+            .lineLimit(2) // Fixed line limit
+            .truncationMode(.tail) // Defined truncation
+            .frame(maxWidth: .infinity, alignment: .leading) // Fixed alignment
+    }
+}
+
+// ❌ Inefficient text row
+struct InefficientTextRow: View {
+    let content: String
+    @State private var isHighlighted = false
+    
+    var body: some View {
+        Text(content)
+            .font(isHighlighted ? .headline : .body) // Dynamic font changes
+            .foregroundColor(isHighlighted ? .blue : .primary) // Dynamic color
+            .lineLimit(isHighlighted ? nil : 2) // Dynamic line limit
+            .scaleEffect(isHighlighted ? 1.1 : 1.0) // Expensive transforms
+            .onTapGesture {
+                withAnimation {
+                    isHighlighted.toggle()
+                }
+            }
+    }
+}
+```
+
+**Advanced Text Features:**
+
+```swift
+// Advanced text features and edge cases
+struct AdvancedTextFeatures: View {
+    @State private var userInput = ""
+    @State private var fontSize: Double = 16
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // 1. Rich text editing capabilities
+            richTextEditor
+            
+            // 2. Custom text styles and themes
+            customTextStyles
+            
+            // 3. Text measurement and layout
+            textMeasurement
+            
+            // 4. Complex text formatting
+            complexFormatting
+        }
+    }
+    
+    private var richTextEditor: some View {
+        VStack(alignment: .leading) {
+            Text("Rich Text Editor")
+                .font(.headline)
+            
+            TextField("Enter text", text: $userInput, axis: .vertical)
+                .textFieldStyle(.roundedBorder)
+                .lineLimit(5...10)
+            
+            // Preview with user formatting
+            Text(userInput.isEmpty ? "Preview text" : userInput)
+                .font(.system(size: fontSize))
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+            
+            Slider(value: $fontSize, in: 12...32) {
+                Text("Font Size")
+            }
+        }
+    }
+    
+    private var customTextStyles: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Custom Text Styles")
+                .font(.headline)
+            
+            // Custom text style implementation
+            Group {
+                Text("Code style text")
+                    .font(.system(.body, design: .monospaced))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(4)
+                
+                Text("Emphasized text")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.linearGradient(
+                        colors: [.blue, .purple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                
+                Text("Shadow text effect")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.7), radius: 2, x: 1, y: 1)
+            }
+        }
+    }
+    
+    private var textMeasurement: some View {
+        GeometryReader { geometry in
+            VStack(alignment: .leading) {
+                Text("Text Measurement")
+                    .font(.headline)
+                
+                let availableWidth = geometry.size.width - 32
+                let sampleText = "This is sample text for measurement calculations"
+                
+                Text("Available width: \(availableWidth, specifier: "%.1f")pt")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text(sampleText)
+                    .font(.body)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(
+                        GeometryReader { textGeometry in
+                            Color.clear
+                                .preference(key: TextSizePreferenceKey.self, 
+                                          value: textGeometry.size)
+                        }
+                    )
+                    .onPreferenceChange(TextSizePreferenceKey.self) { size in
+                        print("Text size: \(size)")
+                    }
+            }
+            .padding()
+        }
+        .frame(height: 150)
+    }
+    
+    private var complexFormatting: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("Complex Formatting")
+                .font(.headline)
+            
+            // Multi-style text composition
+            (Text("Regular ") +
+             Text("Bold ").fontWeight(.bold) +
+             Text("Italic ").italic() +
+             Text("Colored").foregroundColor(.red) +
+             Text(" and ") +
+             Text("Underlined").underline())
+                .font(.body)
+            
+            // Date and number formatting
+            Group {
+                Text("Today is \(Date(), style: .date)")
+                Text("Current time: \(Date(), style: .time)")
+                Text("Relative: \(Date().addingTimeInterval(-3600), style: .relative)")
+                Text("Price: \(1234.56, format: .currency(code: "USD"))")
+                Text("Percentage: \(0.234, format: .percent)")
+            }
+            .font(.body)
+            
+            // Markdown support (iOS 15+)
+            Text("**Bold**, *italic*, and `code` formatting")
+                .font(.body)
+        }
+    }
+}
+
+// Preference key for text size measurement
+struct TextSizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+```
+
+---
+
+### Q6: How do you handle user input with TextField and SecureField?
+
+**Deep Technical Analysis:**
+
+TextField and SecureField represent SwiftUI's integration with the platform's **text input system**, encompassing **keyboard management**, **input validation**, **accessibility**, **localization**, and **security**. These components interface directly with **UITextInput protocol**, **input method editors**, and **system security frameworks**.
+
+**Text Input System Architecture:**
+
+```swift
+// Comprehensive text input analysis
+struct TextInputSystemAnalysis: View {
+    // Basic input state
+    @State private var basicText = ""
+    @State private var secureText = ""
+    @State private var multilineText = ""
+    
+    // Advanced input management
+    @State private var emailInput = ""
+    @State private var phoneInput = ""
+    @State private var numericInput = ""
+    @State private var currencyInput = ""
+    
+    // Input validation state
+    @State private var validationResults: [ValidationResult] = []
+    @State private var isFormValid = false
+    
+    // Focus management
+    @FocusState private var focusedField: InputField?
+    
+    // Input formatting
+    @State private var formattedInputs: [String: String] = [:]
+    
+    enum InputField: Hashable {
+        case basic, secure, multiline, email, phone, numeric, currency
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                basicInputSection
+                secureInputSection
+                formattedInputSection
+                validationSection
+                accessibilitySection
+                performanceSection
+            }
+            .navigationTitle("Text Input Analysis")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    keyboardToolbar
+                }
+            }
+        }
+    }
+    
+    // Basic text input demonstrates core functionality
+    private var basicInputSection: some View {
+        Section("Basic Text Input") {
+            TextField("Basic input", text: $basicText)
+                .focused($focusedField, equals: .basic)
+                .textInputAutocapitalization(.sentences)
+                .autocorrectionDisabled(false)
+                .onSubmit {
+                    handleSubmit(.basic)
+                }
+                .onChange(of: basicText) { oldValue, newValue in
+                    handleTextChange(.basic, oldValue: oldValue, newValue: newValue)
+                }
+            
+            // Multiline text input
+            TextField("Multiline input", text: $multilineText, axis: .vertical)
+                .focused($focusedField, equals: .multiline)
+                .lineLimit(3...8)
+                .textInputAutocapitalization(.sentences)
+            
+            // Input with prompt and helper text
+            VStack(alignment: .leading, spacing: 4) {
+                TextField(text: $basicText, prompt: Text("Enter your message...")) {
+                    Text("Message")
+                }
+                .focused($focusedField, equals: .basic)
+                
+                Text("Helper text explaining the input requirements")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+    
+    // Secure input demonstrates security considerations
+    private var secureInputSection: some View {
+        Section("Secure Input") {
+            SecureField("Password", text: $secureText)
+                .focused($focusedField, equals: .secure)
+                .textContentType(.password) // Keychain integration
+                .passwordRules(.init(descriptor: "minlength: 8; required: lower; required: upper; required: digit;"))
+            
+            // Password strength indicator
+            PasswordStrengthView(password: secureText)
+            
+            // Biometric authentication integration
+            SecureInputWithBiometrics(text: $secureText)
+        }
+    }
+    
+    // Formatted input demonstrates input processing
+    private var formattedInputSection: some View {
+        Section("Formatted Input") {
+            // Email input with validation
+            TextField("Email", text: $emailInput)
+                .focused($focusedField, equals: .email)
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled(true)
+                .textContentType(.emailAddress)
+                .onSubmit {
+                    validateEmail()
+                }
+            
+            // Phone number with formatting
+            TextField("Phone", text: $phoneInput)
+                .focused($focusedField, equals: .phone)
+                .keyboardType(.phonePad)
+                .textContentType(.telephoneNumber)
+                .onChange(of: phoneInput) { oldValue, newValue in
+                    phoneInput = formatPhoneNumber(newValue)
+                }
+            
+            // Numeric input with constraints
+            TextField("Amount", text: $numericInput)
+                .focused($focusedField, equals: .numeric)
+                .keyboardType(.decimalPad)
+                .onChange(of: numericInput) { oldValue, newValue in
+                    numericInput = validateNumericInput(newValue)
+                }
+            
+            // Currency input with formatting
+            CurrencyInputField(value: $currencyInput)
+                .focused($focusedField, equals: .currency)
+        }
+    }
+    
+    // Input validation demonstrates real-time validation
+    private var validationSection: some View {
+        Section("Input Validation") {
+            ForEach(validationResults, id: \.field) { result in
+                ValidationRowView(result: result)
+            }
+            
+            Button("Validate All") {
+                performComprehensiveValidation()
+            }
+            .disabled(!hasInputToValidate)
+        }
+    }
+    
+    // Accessibility features for text input
+    private var accessibilitySection: some View {
+        Section("Accessibility Features") {
+            TextField("Accessible input", text: $basicText)
+                .accessibilityLabel("User message input")
+                .accessibilityHint("Enter your message for submission")
+                .accessibilityValue("Current text: \(basicText)")
+                .accessibilityInputLabels(["message", "text input", "type here"])
+            
+            // Voice input support
+            VoiceInputField(text: $basicText)
+        }
+    }
+    
+    // Performance optimization patterns
+    private var performanceSection: some View {
+        Section("Performance Optimization") {
+            // Debounced input for expensive operations
+            DebouncedInputField(
+                text: $basicText,
+                placeholder: "Debounced input",
+                debounceTime: 0.5
+            ) { debouncedValue in
+                performExpensiveOperation(with: debouncedValue)
+            }
+            
+            // Lazy validation
+            LazyValidationField(text: $emailInput)
+        }
+    }
+    
+    private var keyboardToolbar: some View {
+        HStack {
+            Button("Previous") {
+                focusPreviousField()
+            }
+            .disabled(!canFocusPrevious)
+            
+            Button("Next") {
+                focusNextField()
+            }
+            .disabled(!canFocusNext)
+            
+            Spacer()
+            
+            Button("Done") {
+                focusedField = nil
+            }
+        }
+    }
+    
+    // Helper computed properties
+    private var hasInputToValidate: Bool {
+        !basicText.isEmpty || !emailInput.isEmpty || !phoneInput.isEmpty
+    }
+    
+    private var canFocusPrevious: Bool {
+        focusedField != .basic
+    }
+    
+    private var canFocusNext: Bool {
+        focusedField != .currency
+    }
+    
+    // Input handling methods
+    private func handleSubmit(_ field: InputField) {
+        switch field {
+        case .basic:
+            focusedField = .multiline
+        case .email:
+            validateEmail()
+            focusedField = .phone
+        default:
+            focusedField = nil
+        }
+    }
+    
+    private func handleTextChange(_ field: InputField, oldValue: String, newValue: String) {
+        // Real-time processing for specific fields
+        switch field {
+        case .basic:
+            if newValue.count > 100 {
+                // Truncate long input
+                basicText = String(newValue.prefix(100))
+            }
+        default:
+            break
+        }
+    }
+    
+    private func formatPhoneNumber(_ input: String) -> String {
+        // Remove non-numeric characters
+        let digits = input.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
+        
+        // Format as (XXX) XXX-XXXX
+        switch digits.count {
+        case 0...3:
+            return digits
+        case 4...6:
+            let area = String(digits.prefix(3))
+            let number = String(digits.dropFirst(3))
+            return "(\(area)) \(number)"
+        case 7...10:
+            let area = String(digits.prefix(3))
+            let exchange = String(digits.dropFirst(3).prefix(3))
+            let number = String(digits.dropFirst(6))
+            return "(\(area)) \(exchange)-\(number)"
+        default:
+            return String(digits.prefix(10))
+        }
+    }
+    
+    private func validateNumericInput(_ input: String) -> String {
+        // Allow only digits and decimal point
+        let filtered = input.replacingOccurrences(of: "[^0-9.]", with: "", options: .regularExpression)
+        
+        // Ensure only one decimal point
+        let components = filtered.components(separatedBy: ".")
+        if components.count > 2 {
+            return components[0] + "." + components[1]
+        }
+        
+        return filtered
+    }
+    
+    private func validateEmail() {
+        let isValid = emailInput.contains("@") && emailInput.contains(".")
+        // Add to validation results
+        let result = ValidationResult(
+            field: "email",
+            isValid: isValid,
+            message: isValid ? "Valid email" : "Invalid email format"
+        )
+        updateValidationResult(result)
+    }
+    
+    private func performComprehensiveValidation() {
+        // Comprehensive validation logic
+        validationResults.removeAll()
+        
+        // Validate all fields
+        validateEmail()
+        // Add other validations...
+        
+        isFormValid = validationResults.allSatisfy { $0.isValid }
+    }
+    
+    private func updateValidationResult(_ result: ValidationResult) {
+        if let index = validationResults.firstIndex(where: { $0.field == result.field }) {
+            validationResults[index] = result
+        } else {
+            validationResults.append(result)
+        }
+    }
+    
+    private func focusPreviousField() {
+        // Navigation logic for previous field
+        switch focusedField {
+        case .multiline:
+            focusedField = .basic
+        case .secure:
+            focusedField = .multiline
+        case .email:
+            focusedField = .secure
+        case .phone:
+            focusedField = .email
+        case .numeric:
+            focusedField = .phone
+        case .currency:
+            focusedField = .numeric
+        default:
+            break
+        }
+    }
+    
+    private func focusNextField() {
+        // Navigation logic for next field
+        switch focusedField {
+        case .basic:
+            focusedField = .multiline
+        case .multiline:
+            focusedField = .secure
+        case .secure:
+            focusedField = .email
+        case .email:
+            focusedField = .phone
+        case .phone:
+            focusedField = .numeric
+        case .numeric:
+            focusedField = .currency
+        default:
+            break
+        }
+    }
+    
+    private func performExpensiveOperation(with text: String) {
+        // Simulate expensive operation (search, validation, etc.)
+        print("Performing expensive operation with: \(text)")
+    }
+}
+
+// Supporting views and components
+struct ValidationResult {
+    let field: String
+    let isValid: Bool
+    let message: String
+}
+
+struct ValidationRowView: View {
+    let result: ValidationResult
+    
+    var body: some View {
+        HStack {
+            Image(systemName: result.isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundColor(result.isValid ? .green : .red)
+            
+            Text(result.message)
+                .foregroundColor(result.isValid ? .primary : .red)
+            
+            Spacer()
+        }
+    }
+}
+
+struct PasswordStrengthView: View {
+    let password: String
+    
+    private var strength: PasswordStrength {
+        calculatePasswordStrength(password)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Password Strength:")
+                    .font(.caption)
+                
+                Text(strength.description)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(strength.color)
+            }
+            
+            ProgressView(value: strength.score, total: 1.0)
+                .progressViewStyle(LinearProgressViewStyle(tint: strength.color))
+                .frame(height: 4)
+        }
+    }
+    
+    private func calculatePasswordStrength(_ password: String) -> PasswordStrength {
+        var score = 0.0
+        
+        if password.count >= 8 { score += 0.25 }
+        if password.rangeOfCharacter(from: .lowercaseLetters) != nil { score += 0.25 }
+        if password.rangeOfCharacter(from: .uppercaseLetters) != nil { score += 0.25 }
+        if password.rangeOfCharacter(from: .decimalDigits) != nil { score += 0.25 }
+        
+        switch score {
+        case 0.0..<0.25:
+            return PasswordStrength(score: score, description: "Weak", color: .red)
+        case 0.25..<0.5:
+            return PasswordStrength(score: score, description: "Fair", color: .orange)
+        case 0.5..<0.75:
+            return PasswordStrength(score: score, description: "Good", color: .yellow)
+        case 0.75...1.0:
+            return PasswordStrength(score: score, description: "Strong", color: .green)
+        default:
+            return PasswordStrength(score: 0, description: "Weak", color: .red)
+        }
+    }
+}
+
+struct PasswordStrength {
+    let score: Double
+    let description: String
+    let color: Color
+}
+```
+
+**Advanced Input Features:**
+
+```swift
+// Advanced input features and customization
+struct AdvancedInputFeatures: View {
+    @State private var text = ""
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Custom input styling
+            customStyledInput
+            
+            // Input with real-time suggestions
+            autocompleteInput
+            
+            // Rich text input capabilities
+            richTextInput
+            
+            // Input with custom keyboard
+            customKeyboardInput
+        }
+    }
+    
+    private var customStyledInput: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Custom Styled Input")
+                .font(.headline)
+            
+            TextField("Custom styled", text: $text)
+                .focused($isFocused)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gray.opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(isFocused ? Color.blue : Color.clear, lineWidth: 2)
+                        )
+                )
+                .overlay(alignment: .trailing) {
+                    if !text.isEmpty {
+                        Button(action: { text = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.trailing, 12)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: isFocused)
+        }
+    }
+    
+    private var autocompleteInput: some View {
+        VStack(alignment: .leading) {
+            Text("Autocomplete Input")
+                .font(.headline)
+            
+            AutocompleteTextField(
+                text: $text,
+                suggestions: ["apple", "application", "appreciate", "approach"]
+            )
+        }
+    }
+    
+    private var richTextInput: some View {
+        VStack(alignment: .leading) {
+            Text("Rich Text Input")
+                .font(.headline)
+            
+            RichTextEditor(content: $text)
+        }
+    }
+    
+    private var customKeyboardInput: some View {
+        VStack(alignment: .leading) {
+            Text("Custom Keyboard")
+                .font(.headline)
+            
+            CustomKeyboardTextField(text: $text)
+        }
+    }
+}
+
+// Custom components for advanced features
+struct AutocompleteTextField: View {
+    @Binding var text: String
+    let suggestions: [String]
+    @State private var showingSuggestions = false
+    @State private var filteredSuggestions: [String] = []
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TextField("Type to see suggestions", text: $text)
+                .textFieldStyle(.roundedBorder)
+                .onChange(of: text) { oldValue, newValue in
+                    updateSuggestions(for: newValue)
+                }
+                .onSubmit {
+                    showingSuggestions = false
+                }
+            
+            if showingSuggestions && !filteredSuggestions.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(filteredSuggestions, id: \.self) { suggestion in
+                        Button(action: {
+                            text = suggestion
+                            showingSuggestions = false
+                        }) {
+                            HStack {
+                                Text(suggestion)
+                                    .foregroundColor(.primary)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.plain)
+                        
+                        if suggestion != filteredSuggestions.last {
+                            Divider()
+                        }
+                    }
+                }
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+                .shadow(radius: 4)
+            }
+        }
+    }
+    
+    private func updateSuggestions(for input: String) {
+        if input.isEmpty {
+            showingSuggestions = false
+            filteredSuggestions = []
+        } else {
+            filteredSuggestions = suggestions.filter { $0.lowercased().hasPrefix(input.lowercased()) }
+            showingSuggestions = !filteredSuggestions.isEmpty
+        }
+    }
+}
+
+struct RichTextEditor: View {
+    @Binding var content: String
+    @State private var isBold = false
+    @State private var isItalic = false
+    
+    var body: some View {
+        VStack {
+            // Formatting toolbar
+            HStack {
+                Button("B") {
+                    isBold.toggle()
+                }
+                .fontWeight(isBold ? .bold : .regular)
+                .foregroundColor(isBold ? .blue : .primary)
+                
+                Button("I") {
+                    isItalic.toggle()
+                }
+                .italic(isItalic)
+                .foregroundColor(isItalic ? .blue : .primary)
+                
+                Spacer()
+            }
+            .padding(.horizontal)
+            
+            // Rich text input area
+            TextField("Rich text content", text: $content, axis: .vertical)
+                .font(.body.weight(isBold ? .bold : .regular))
+                .italic(isItalic)
+                .lineLimit(5...10)
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+        }
+    }
+}
+
+struct CustomKeyboardTextField: View {
+    @Binding var text: String
+    @State private var showingCustomKeyboard = false
+    
+    var body: some View {
+        VStack {
+            TextField("Tap to use custom keyboard", text: $text)
+                .textFieldStyle(.roundedBorder)
+                .onTapGesture {
+                    showingCustomKeyboard = true
+                }
+                .disabled(showingCustomKeyboard)
+            
+            if showingCustomKeyboard {
+                CustomKeyboard { key in
+                    handleCustomKeyInput(key)
+                }
+                .transition(.move(edge: .bottom))
+            }
+        }
+        .animation(.easeInOut, value: showingCustomKeyboard)
+    }
+    
+    private func handleCustomKeyInput(_ key: String) {
+        if key == "Done" {
+            showingCustomKeyboard = false
+        } else if key == "⌫" {
+            if !text.isEmpty {
+                text.removeLast()
+            }
+        } else {
+            text += key
+        }
+    }
+}
+
+struct CustomKeyboard: View {
+    let onKeyPress: (String) -> Void
+    
+    private let keys = [
+        ["1", "2", "3"],
+        ["4", "5", "6"],
+        ["7", "8", "9"],
+        ["0", "⌫", "Done"]
+    ]
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            ForEach(keys, id: \.self) { row in
+                HStack(spacing: 8) {
+                    ForEach(row, id: \.self) { key in
+                        Button(key) {
+                            onKeyPress(key)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(8)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+```
+
+This comprehensive analysis demonstrates the depth of SwiftUI's text input capabilities, from basic functionality to advanced features like custom keyboards, rich text editing, and sophisticated validation systems.
+
+---
+
+## Layout System
+
+### Q7: Explain VStack, HStack, and ZStack
+
+**Deep Technical Analysis:**
+
+SwiftUI's stack views implement a **sophisticated two-pass layout algorithm** based on **constraint satisfaction** and **optimal space distribution**. The layout system uses **computational geometry** principles to efficiently arrange views.
+
+**Core Algorithm:**
+1. **Pass 1 - Size Proposal**: Parent proposes size to children, children negotiate requirements
+2. **Pass 2 - Position Assignment**: Parent assigns final positions based on alignment rules
+
+```swift
+// Layout algorithm demonstration
+struct StackLayoutDemo: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Two-Pass Layout Algorithm")
+                .font(.title2)
+            
+            // Fixed vs Flexible sizing
+            HStack(spacing: 10) {
+                Text("Flexible")
+                    .padding()
+                    .background(Color.blue.opacity(0.3))
+                
+                Text("Fixed")
+                    .padding()
+                    .frame(width: 100)
+                    .background(Color.red.opacity(0.3))
+                
+                Text("Flexible")
+                    .padding()
+                    .background(Color.green.opacity(0.3))
+            }
+            
+            // Custom alignment
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Leading Aligned")
+                Text("Also Leading")
+                Text("All Leading Aligned")
+            }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+        }
+    }
+}
+```
+
+**ZStack Performance Considerations:**
+- Each layer adds rendering complexity
+- Depth sorting happens automatically  
+- Hit testing traverses front-to-back
+- Memory usage scales with layer count
+
+---
+
+### Q8: How does the frame modifier work?
+
+**Deep Technical Analysis:**
+
+The frame modifier integrates with SwiftUI's **constraint system** to control view sizing and positioning. It operates during the **size proposal phase** of the layout algorithm.
+
+```swift
+// Frame modifier analysis
+struct FrameModifierDemo: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            // Fixed frame
+            Text("Fixed Size")
+                .padding()
+                .background(Color.blue.opacity(0.3))
+                .frame(width: 150, height: 80)
+                .background(Color.red.opacity(0.2))
+            
+            // Flexible frame with constraints  
+            Text("Flexible with constraints")
+                .padding()
+                .background(Color.green.opacity(0.3))
+                .frame(minWidth: 100, maxWidth: 250, minHeight: 40, maxHeight: 100)
+                .background(Color.yellow.opacity(0.2))
+            
+            // Infinite frame
+            Text("Full width")
+                .padding()
+                .background(Color.purple.opacity(0.3))
+                .frame(maxWidth: .infinity, maxHeight: 50)
+                .background(Color.orange.opacity(0.2))
+        }
+        .padding()
+    }
+}
+```
+
+**Frame Modifier Types:**
+- **Fixed**: Sets exact dimensions
+- **Flexible**: Sets min/max constraints
+- **Ideal**: Suggests preferred size
+- **Infinite**: Takes all available space
+
+---
+
+### Q9: What is GeometryReader and when do you use it?
+
+**Deep Technical Analysis:**
+
+GeometryReader provides **runtime access** to layout information, enabling **dynamic layouts** based on available space. It always takes all available space and provides geometry information to its content.
+
+```swift
+// GeometryReader comprehensive example
+struct GeometryReaderDemo: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("GeometryReader Analysis")
+                .font(.title2)
+            
+            GeometryReader { geometry in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Geometry Information")
+                        .fontWeight(.semibold)
+                    
+                    Text("Size: \(geometry.size.width, specifier: "%.1f") × \(geometry.size.height, specifier: "%.1f")")
+                        .font(.caption)
+                    
+                    Text("Safe Area: \(geometry.safeAreaInsets.top, specifier: "%.1f")")
+                        .font(.caption)
+                    
+                    // Responsive circle
+                    Circle()
+                        .fill(Color.blue.opacity(0.3))
+                        .frame(
+                            width: min(geometry.size.width, geometry.size.height) * 0.6,
+                            height: min(geometry.size.width, geometry.size.height) * 0.6
+                        )
+                        .position(
+                            x: geometry.size.width / 2,
+                            y: geometry.size.height / 2
+                        )
+                }
+                .padding()
+            }
+            .frame(height: 200)
+            .background(Color.gray.opacity(0.1))
+        }
+        .padding()
+    }
+}
+```
+
+**Performance Considerations:**
+- GeometryReader always takes all available space
+- Can cause unnecessary layout recalculations
+- Use sparingly in performance-critical sections
+- Consider alternatives like @State for simple cases
+
+---
+
+## State Management
+
+### Q10: Explain @State, @Binding, @ObservedObject, and @StateObject
+
+**Deep Technical Analysis:**
+
+SwiftUI's property wrappers implement a **reactive data flow system** based on **publisher-subscriber patterns** and **automatic dependency tracking**. Understanding these requires knowledge of **memory management**, **reference semantics**, and **SwiftUI's update cycle**.
+
+**@State Deep Dive:**
+
+```swift
+// @State comprehensive analysis
+struct StateAnalysis: View {
+    @State private var counter = 0
+    @State private var isExpanded = false
+    @State private var items: [String] = []
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("@State Property Wrapper Analysis")
+                .font(.title2)
+            
+            // Basic state management
+            VStack {
+                Text("Counter: \(counter)")
+                    .font(.title)
+                
+                HStack {
+                    Button("Increment") {
+                        counter += 1 // Triggers view update
+                    }
+                    
+                    Button("Decrement") {
+                        counter -= 1 // Triggers view update
+                    }
+                }
+            }
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            
+            // Complex state with collections
+            VStack {
+                Text("Items: \(items.count)")
+                
+                Button("Add Item") {
+                    items.append("Item \(items.count + 1)")
+                    // SwiftUI automatically detects array mutation
+                }
+                
+                if !items.isEmpty {
+                    List(items, id: \.self) { item in
+                        Text(item)
+                    }
+                    .frame(height: 100)
+                }
+            }
+            .padding()
+            .background(Color.green.opacity(0.1))
+        }
+    }
+}
+```
+
+**@Binding Deep Dive:**
+
+```swift
+// @Binding analysis with parent-child communication
+struct BindingAnalysis: View {
+    @State private var parentValue = ""
+    @State private var isToggled = false
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("@Binding Analysis")
+                .font(.title2)
+            
+            Text("Parent Value: '\(parentValue)'")
+                .font(.headline)
+            
+            // Child component with binding
+            ChildComponentWithBinding(
+                text: $parentValue,
+                isToggled: $isToggled
+            )
+            
+            Text("Toggle State: \(isToggled ? "ON" : "OFF")")
+                .foregroundColor(isToggled ? .green : .red)
+        }
+        .padding()
+    }
+}
+
+struct ChildComponentWithBinding: View {
+    @Binding var text: String
+    @Binding var isToggled: Bool
+    
+    var body: some View {
+        VStack(spacing: 15) {
+            Text("Child Component")
+                .font(.headline)
+            
+            TextField("Enter text", text: $text)
+                .textFieldStyle(.roundedBorder)
+            
+            Toggle("Toggle State", isOn: $isToggled)
+            
+            Button("Clear Text") {
+                text = "" // Modifies parent's state
+            }
+        }
+        .padding()
+        .background(Color.yellow.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+```
+
+**@ObservedObject vs @StateObject:**
+
+```swift
+// Comprehensive comparison of ObservedObject vs StateObject
+class DataManager: ObservableObject {
+    @Published var data: [String] = []
+    @Published var isLoading = false
+    
+    init() {
+        print("DataManager initialized: \(ObjectIdentifier(self))")
+    }
+    
+    deinit {
+        print("DataManager deinitialized")
+    }
+    
+    func loadData() {
+        isLoading = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.data = ["Item 1", "Item 2", "Item 3"]
+            self.isLoading = false
+        }
+    }
+}
+
+struct ObservableObjectAnalysis: View {
+    @State private var recreateViews = false
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("@ObservedObject vs @StateObject")
+                .font(.title2)
+            
+            Button("Recreate Views") {
+                recreateViews.toggle()
+            }
+            
+            if recreateViews {
+                VStack {
+                    StateObjectExample()
+                    ObservedObjectExample()
+                }
+            } else {
+                VStack {
+                    StateObjectExample()
+                    ObservedObjectExample()
+                }
+            }
+        }
+        .padding()
+    }
+}
+
+struct StateObjectExample: View {
+    @StateObject private var dataManager = DataManager()
+    
+    var body: some View {
+        VStack {
+            Text("@StateObject Example")
+                .font(.headline)
+            
+            Text("Object ID: \(ObjectIdentifier(dataManager).debugDescription)")
+                .font(.caption)
+            
+            if dataManager.isLoading {
+                ProgressView()
+            } else {
+                List(dataManager.data, id: \.self) { item in
+                    Text(item)
+                }
+                .frame(height: 100)
+            }
+            
+            Button("Load Data") {
+                dataManager.loadData()
+            }
+        }
+        .padding()
+        .background(Color.green.opacity(0.1))
+    }
+}
+
+struct ObservedObjectExample: View {
+    @ObservedObject private var dataManager = DataManager() // ⚠️ Recreated on each view update
+    
+    var body: some View {
+        VStack {
+            Text("@ObservedObject Example")
+                .font(.headline)
+            
+            Text("Object ID: \(ObjectIdentifier(dataManager).debugDescription)")
+                .font(.caption)
+            
+            if dataManager.isLoading {
+                ProgressView()
+            } else {
+                List(dataManager.data, id: \.self) { item in
+                    Text(item)
+                }
+                .frame(height: 100)
+            }
+            
+            Button("Load Data") {
+                dataManager.loadData()
+            }
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+    }
+}
+```
+
+**Advanced State Management Patterns:**
+
+```swift
+// Advanced state management with multiple property wrappers
+struct AdvancedStateManagement: View {
+    @AppStorage("userPreference") private var userPreference = ""
+    @SceneStorage("selectedTab") private var selectedTab = 0
+    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject var globalSettings: GlobalSettings
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            StateTab()
+                .tabItem { Text("State") }
+                .tag(0)
+            
+            BindingTab()
+                .tabItem { Text("Binding") }
+                .tag(1)
+            
+            ObservableTab()
+                .tabItem { Text("Observable") }
+                .tag(2)
+        }
+        .preferredColorScheme(colorScheme)
+    }
+}
+
+class GlobalSettings: ObservableObject {
+    @Published var theme: Theme = .light
+    @Published var fontSize: Double = 16
+    @Published var notifications: Bool = true
+}
+
+enum Theme: String, CaseIterable {
+    case light, dark, system
+}
+
+struct StateTab: View {
+    @State private var localCounter = 0
+    
+    var body: some View {
+        VStack {
+            Text("Local State Demo")
+            Text("Counter: \(localCounter)")
+            Button("Increment") {
+                localCounter += 1
+            }
+        }
+    }
+}
+
+struct BindingTab: View {
+    @State private var parentText = ""
+    
+    var body: some View {
+        VStack {
+            Text("Binding Demo")
+            Text("Parent: \(parentText)")
+            ChildWithBinding(text: $parentText)
+        }
+    }
+}
+
+struct ChildWithBinding: View {
+    @Binding var text: String
+    
+    var body: some View {
+        TextField("Child input", text: $text)
+            .textFieldStyle(.roundedBorder)
+    }
+}
+
+struct ObservableTab: View {
+    @StateObject private var viewModel = TabViewModel()
+    
+    var body: some View {
+        VStack {
+            Text("Observable Demo")
+            Text("Data: \(viewModel.data)")
+            Button("Load") {
+                viewModel.loadData()
+            }
+        }
+    }
+}
+
+class TabViewModel: ObservableObject {
+    @Published var data = "No data"
+    
+    func loadData() {
+        data = "Loaded at \(Date())"
+    }
+}
+```
+
+**Memory Management and Performance:**
+
+```swift
+// Memory management implications
+struct MemoryManagementDemo: View {
+    @State private var showDetail = false
+    
+    var body: some View {
+        VStack {
+            Button("Show Detail") {
+                showDetail = true
+            }
+            
+            if showDetail {
+                // This view and its @StateObject will be deallocated when showDetail = false
+                DetailViewWithStateObject()
+            }
+        }
+        .sheet(isPresented: $showDetail) {
+            // Sheet content with proper memory management
+            SheetContentView()
+        }
+    }
+}
+
+struct DetailViewWithStateObject: View {
+    @StateObject private var heavyResource = HeavyResourceManager()
+    
+    var body: some View {
+        VStack {
+            Text("Heavy Resource View")
+            Text("Resource loaded: \(heavyResource.isLoaded)")
+        }
+        .onAppear {
+            heavyResource.load()
+        }
+    }
+}
+
+class HeavyResourceManager: ObservableObject {
+    @Published var isLoaded = false
+    private var heavyData: [String] = []
+    
+    init() {
+        print("HeavyResourceManager created")
+    }
+    
+    deinit {
+        print("HeavyResourceManager deallocated")
+    }
+    
+    func load() {
+        // Simulate heavy resource loading
+        heavyData = Array(repeating: "Heavy data", count: 10000)
+        isLoaded = true
+    }
+}
+
+struct SheetContentView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var sheetViewModel = SheetViewModel()
+    
+    var body: some View {
+        VStack {
+            Text("Sheet Content")
+            Button("Dismiss") {
+                dismiss()
+            }
+        }
+    }
+}
+
+class SheetViewModel: ObservableObject {
+    @Published var sheetData = "Sheet initialized"
+    
+    init() {
+        print("SheetViewModel created")
+    }
+    
+    deinit {
+        print("SheetViewModel deallocated")
+    }
+}
+```
+
+## Theoretical Computer Science Foundations
+
+**Core Theoretical Concepts:**
+
+**1. Functional Reactive Programming (FRP) Theory:**
+- **Mathematical Foundation**: Based on category theory and signal processing
+- **Temporal Logic**: State changes follow temporal ordering constraints
+- **Monadic Composition**: Property wrappers compose predictably
+- **Publisher-Subscriber Pattern**: Automatic dependency tracking
+
+**2. Memory Management Theory:**
+- **Copy-on-Write (CoW)**: Value semantics with performance optimization
+- **Automatic Reference Counting (ARC)**: Deterministic memory management
+- **Weak Reference Graphs**: Prevents retain cycles in reactive systems
+- **Storage Locality**: Cache-friendly data layout
+
+**3. Layout Algorithm Theory:**
+- **Constraint Satisfaction**: Two-pass algorithm with O(n) complexity
+- **Computational Geometry**: Efficient space partitioning
+- **Dynamic Programming**: Optimal substructure in layout calculations
+- **Graph Theory**: View hierarchy as directed acyclic graph (DAG)
+
+**Interview Key Points:**
+- SwiftUI uses **immutable view descriptions** with **reactive updates**
+- Property wrappers implement **type-safe** reactive programming
+- Layout system uses **constraint propagation** for optimal performance
+- Memory model prevents common iOS memory issues through **value semantics**
+
+---
+
+## Navigation
+
+### Q12: How does navigation work in SwiftUI?
+
+**Deep Theoretical Analysis:**
+
+SwiftUI navigation implements a **hierarchical state machine** based on **stack-based navigation theory** and **declarative UI principles**. The navigation system uses **coordinator patterns**, **deep linking protocols**, and **state restoration mechanisms**.
+
+**Navigation State Theory:**
+
+```swift
+// Theoretical navigation state machine
+enum NavigationState {
+    case root
+    case pushed(destination: AnyView, parent: NavigationState)
+    case modal(content: AnyView, parent: NavigationState)
+    case sheet(content: AnyView, parent: NavigationState)
+    case fullScreenCover(content: AnyView, parent: NavigationState)
+}
+
+// Navigation coordinator implementing state machine
+class NavigationCoordinator: ObservableObject {
+    @Published private(set) var currentState: NavigationState = .root
+    @Published var navigationPath = NavigationPath()
+    
+    // State transition functions
+    func push<Destination: View>(_ destination: Destination) {
+        currentState = .pushed(
+            destination: AnyView(destination),
+            parent: currentState
+        )
+    }
+    
+    func pop() {
+        switch currentState {
+        case .pushed(_, let parent):
+            currentState = parent
+        default:
+            break
+        }
+    }
+    
+    func present<Content: View>(_ content: Content, style: PresentationStyle) {
+        switch style {
+        case .sheet:
+            currentState = .sheet(content: AnyView(content), parent: currentState)
+        case .fullScreenCover:
+            currentState = .fullScreenCover(content: AnyView(content), parent: currentState)
+        }
+    }
+    
+    func dismiss() {
+        switch currentState {
+        case .modal(_, let parent), .sheet(_, let parent), .fullScreenCover(_, let parent):
+            currentState = parent
+        default:
+            break
+        }
+    }
+}
+
+enum PresentationStyle {
+    case sheet, fullScreenCover
+}
+```
+
+**Advanced Navigation Patterns:**
+
+```swift
+// Comprehensive navigation implementation
+struct AdvancedNavigationDemo: View {
+    @StateObject private var coordinator = NavigationCoordinator()
+    @State private var selectedTab = 0
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            // Stack-based navigation
+            NavigationStackDemo()
+                .tabItem { Label("Stack", systemImage: "square.stack") }
+                .tag(0)
+            
+            // Split view navigation
+            NavigationSplitViewDemo()
+                .tabItem { Label("Split", systemImage: "sidebar.left") }
+                .tag(1)
+            
+            // Programmatic navigation
+            ProgrammaticNavigationDemo()
+                .tabItem { Label("Programmatic", systemImage: "arrow.right.square") }
+                .tag(2)
+        }
+        .environmentObject(coordinator)
+    }
+}
+
+// Modern NavigationStack implementation
+struct NavigationStackDemo: View {
+    @State private var navigationPath = NavigationPath()
+    @State private var items = Array(1...20)
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            List(items, id: \.self) { item in
+                NavigationLink("Item \(item)", value: item)
+            }
+            .navigationTitle("Navigation Stack")
+            .navigationDestination(for: Int.self) { item in
+                DetailView(item: item, navigationPath: $navigationPath)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Deep Link") {
+                        // Deep navigation to specific item
+                        navigationPath = NavigationPath([5, 10, 15])
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct DetailView: View {
+    let item: Int
+    @Binding var navigationPath: NavigationPath
+    @State private var subItems: [String] = []
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Detail for Item \(item)")
+                .font(.title)
+            
+            List(subItems, id: \.self) { subItem in
+                NavigationLink(subItem, value: subItem)
+            }
+            
+            Button("Navigate to Root") {
+                navigationPath = NavigationPath()
+            }
+            
+            Button("Navigate to Specific Item") {
+                navigationPath.append(item + 1)
+            }
+        }
+        .navigationTitle("Item \(item)")
+        .navigationDestination(for: String.self) { subItem in
+            SubDetailView(subItem: subItem)
+        }
+        .onAppear {
+            loadSubItems()
+        }
+    }
+    
+    private func loadSubItems() {
+        subItems = (1...5).map { "Sub-item \(item).\($0)" }
+    }
+}
+
+struct SubDetailView: View {
+    let subItem: String
+    
+    var body: some View {
+        VStack {
+            Text("Sub Detail: \(subItem)")
+                .font(.title2)
+            
+            Text("This demonstrates deep navigation hierarchies")
+                .padding()
+        }
+        .navigationTitle(subItem)
+    }
+}
+
+// NavigationSplitView for adaptive layouts
+struct NavigationSplitViewDemo: View {
+    @State private var selectedCategory: Category?
+    @State private var selectedItem: Item?
+    @State private var categories = Category.samples
+    
+    var body: some View {
+        NavigationSplitView {
+            // Sidebar
+            List(categories, selection: $selectedCategory) { category in
+                NavigationLink(category.name, value: category)
+            }
+            .navigationTitle("Categories")
+        } content: {
+            // Content pane
+            if let selectedCategory = selectedCategory {
+                List(selectedCategory.items, selection: $selectedItem) { item in
+                    NavigationLink(item.name, value: item)
+                }
+                .navigationTitle(selectedCategory.name)
+            } else {
+                Text("Select a category")
+                    .foregroundColor(.secondary)
+            }
+        } detail: {
+            // Detail pane
+            if let selectedItem = selectedItem {
+                ItemDetailView(item: selectedItem)
+            } else {
+                Text("Select an item")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationSplitViewStyle(.balanced)
+    }
+}
+
+struct Category: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
+    let items: [Item]
+    
+    static let samples: [Category] = [
+        Category(name: "Electronics", items: Item.electronics),
+        Category(name: "Books", items: Item.books),
+        Category(name: "Clothing", items: Item.clothing)
+    ]
+}
+
+struct Item: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
+    let description: String
+    
+    static let electronics = [
+        Item(name: "iPhone", description: "Apple smartphone"),
+        Item(name: "MacBook", description: "Apple laptop"),
+        Item(name: "iPad", description: "Apple tablet")
+    ]
+    
+    static let books = [
+        Item(name: "Swift Programming", description: "Learn Swift"),
+        Item(name: "SwiftUI Guide", description: "Master SwiftUI"),
+        Item(name: "iOS Architecture", description: "App architecture patterns")
+    ]
+    
+    static let clothing = [
+        Item(name: "T-Shirt", description: "Cotton t-shirt"),
+        Item(name: "Jeans", description: "Denim jeans"),
+        Item(name: "Jacket", description: "Winter jacket")
+    ]
+}
+
+struct ItemDetailView: View {
+    let item: Item
+    @State private var showingSheet = false
+    @State private var showingFullScreen = false
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text(item.name)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text(item.description)
+                    .font(.body)
+                
+                VStack(spacing: 15) {
+                    Button("Show Sheet") {
+                        showingSheet = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                    Button("Show Full Screen") {
+                        showingFullScreen = true
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle(item.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingSheet) {
+            SheetContentView(item: item)
+        }
+        .fullScreenCover(isPresented: $showingFullScreen) {
+            FullScreenContentView(item: item)
+        }
+    }
+}
+
+struct SheetContentView: View {
+    let item: Item
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Sheet for \(item.name)")
+                    .font(.title)
+                
+                Text("This is a modal presentation")
+                    .padding()
+                
+                Button("Dismiss") {
+                    dismiss()
+                }
+            }
+            .navigationTitle("Sheet")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct FullScreenContentView: View {
+    let item: Item
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            VStack(spacing: 20) {
+                Text("Full Screen for \(item.name)")
+                    .font(.title)
+                    .foregroundColor(.white)
+                
+                Text("This covers the entire screen")
+                    .foregroundColor(.white)
+                    .padding()
+                
+                Button("Close") {
+                    dismiss()
+                }
+                .foregroundColor(.white)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(8)
+            }
+        }
+    }
+}
+
+// Programmatic navigation with coordinator
+struct ProgrammaticNavigationDemo: View {
+    @EnvironmentObject var coordinator: NavigationCoordinator
+    @State private var navigationStack: [Route] = []
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("Programmatic Navigation")
+                    .font(.title)
+                
+                Button("Navigate to Profile") {
+                    navigationStack.append(.profile)
+                }
+                
+                Button("Navigate to Settings") {
+                    navigationStack.append(.settings)
+                }
+                
+                Button("Deep Link to Nested View") {
+                    navigationStack = [.profile, .editProfile, .changePassword]
+                }
+                
+                if !navigationStack.isEmpty {
+                    Button("Pop to Root") {
+                        navigationStack.removeAll()
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+            .navigationTitle("Home")
+            .navigationDestination(for: Route.self) { route in
+                routeDestination(for: route)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func routeDestination(for route: Route) -> some View {
+        switch route {
+        case .profile:
+            ProfileView(navigationStack: $navigationStack)
+        case .settings:
+            SettingsView()
+        case .editProfile:
+            EditProfileView(navigationStack: $navigationStack)
+        case .changePassword:
+            ChangePasswordView()
+        }
+    }
+}
+
+enum Route: Hashable {
+    case profile
+    case settings
+    case editProfile
+    case changePassword
+}
+
+struct ProfileView: View {
+    @Binding var navigationStack: [Route]
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Profile View")
+                .font(.title)
+            
+            Button("Edit Profile") {
+                navigationStack.append(.editProfile)
+            }
+        }
+        .navigationTitle("Profile")
+    }
+}
+
+struct SettingsView: View {
+    var body: some View {
+        List {
+            Text("Setting 1")
+            Text("Setting 2")
+            Text("Setting 3")
+        }
+        .navigationTitle("Settings")
+    }
+}
+
+struct EditProfileView: View {
+    @Binding var navigationStack: [Route]
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Edit Profile")
+                .font(.title)
+            
+            Button("Change Password") {
+                navigationStack.append(.changePassword)
+            }
+        }
+        .navigationTitle("Edit Profile")
+    }
+}
+
+struct ChangePasswordView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Change Password")
+                .font(.title)
+            
+            SecureField("Current Password", text: .constant(""))
+            SecureField("New Password", text: .constant(""))
+            SecureField("Confirm Password", text: .constant(""))
+            
+            Button("Update Password") {
+                // Update password logic
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+        .navigationTitle("Change Password")
+    }
+}
+```
+
+**Navigation Performance Theory:**
+
+```swift
+// Navigation performance optimization patterns
+struct NavigationPerformanceAnalysis: View {
+    @State private var performanceMode: PerformanceMode = .efficient
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Picker("Performance Mode", selection: $performanceMode) {
+                    Text("Efficient").tag(PerformanceMode.efficient)
+                    Text("Inefficient").tag(PerformanceMode.inefficient)
+                }
+                .pickerStyle(.segmented)
+                
+                switch performanceMode {
+                case .efficient:
+                    EfficientNavigationPattern()
+                case .inefficient:
+                    InefficientNavigationPattern()
+                }
+            }
+            .navigationTitle("Performance Analysis")
+        }
+    }
+}
+
+enum PerformanceMode {
+    case efficient, inefficient
+}
+
+// ✅ Efficient navigation pattern
+struct EfficientNavigationPattern: View {
+    @State private var items = (1...1000).map { "Item \($0)" }
+    
+    var body: some View {
+        List {
+            ForEach(items, id: \.self) { item in
+                // Lazy navigation destination creation
+                NavigationLink(item, value: item)
+            }
+        }
+        .navigationDestination(for: String.self) { item in
+            // Destination created only when needed
+            LazyDestinationView(item: item)
+        }
+    }
+}
+
+// ❌ Inefficient navigation pattern
+struct InefficientNavigationPattern: View {
+    @State private var items = (1...1000).map { "Item \($0)" }
+    
+    var body: some View {
+        List {
+            ForEach(items, id: \.self) { item in
+                // Eager destination creation (inefficient)
+                NavigationLink(destination: EagerDestinationView(item: item)) {
+                    Text(item)
+                }
+            }
+        }
+    }
+}
+
+struct LazyDestinationView: View {
+    let item: String
+    
+    var body: some View {
+        VStack {
+            Text("Lazy: \(item)")
+                .font(.title)
+            Text("Created only when navigated to")
+                .foregroundColor(.green)
+        }
+        .onAppear {
+            print("LazyDestinationView created for \(item)")
+        }
+    }
+}
+
+struct EagerDestinationView: View {
+    let item: String
+    
+    var body: some View {
+        VStack {
+            Text("Eager: \(item)")
+                .font(.title)
+            Text("Created immediately (inefficient)")
+                .foregroundColor(.red)
+        }
+        .onAppear {
+            print("EagerDestinationView created for \(item)")
+        }
+    }
+}
+```
+
+**Navigation State Restoration:**
+
+```swift
+// State restoration and deep linking
+class NavigationStateManager: ObservableObject {
+    @Published var restoredPath = NavigationPath()
+    
+    private let userDefaults = UserDefaults.standard
+    private let pathKey = "NavigationPath"
+    
+    func saveNavigationState(_ path: NavigationPath) {
+        // Save navigation state for restoration
+        if let data = try? JSONEncoder().encode(path.codable) {
+            userDefaults.set(data, forKey: pathKey)
+        }
+    }
+    
+    func restoreNavigationState() -> NavigationPath {
+        guard let data = userDefaults.data(forKey: pathKey),
+              let codablePath = try? JSONDecoder().decode(NavigationPath.CodableRepresentation.self, from: data) else {
+            return NavigationPath()
+        }
+        
+        return NavigationPath(codablePath)
+    }
+    
+    func handleDeepLink(_ url: URL) -> NavigationPath {
+        // Parse URL and create navigation path
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        var path = NavigationPath()
+        
+        // Example: myapp://profile/edit/password
+        if let pathComponents = components?.path.components(separatedBy: "/").dropFirst() {
+            for component in pathComponents {
+                switch component {
+                case "profile":
+                    path.append(Route.profile)
+                case "edit":
+                    path.append(Route.editProfile)
+                case "password":
+                    path.append(Route.changePassword)
+                default:
+                    break
+                }
+            }
+        }
+        
+        return path
+    }
+}
+
+struct StateRestorationDemo: View {
+    @StateObject private var stateManager = NavigationStateManager()
+    @State private var navigationPath = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            VStack(spacing: 20) {
+                Text("State Restoration Demo")
+                    .font(.title)
+                
+                Button("Save Current State") {
+                    stateManager.saveNavigationState(navigationPath)
+                }
+                
+                Button("Restore Saved State") {
+                    navigationPath = stateManager.restoreNavigationState()
+                }
+                
+                Button("Simulate Deep Link") {
+                    let url = URL(string: "myapp://profile/edit/password")!
+                    navigationPath = stateManager.handleDeepLink(url)
+                }
+            }
+            .navigationTitle("State Management")
+            .navigationDestination(for: Route.self) { route in
+                routeView(for: route)
+            }
+        }
+        .onAppear {
+            navigationPath = stateManager.restoreNavigationState()
+        }
+        .onChange(of: navigationPath) { _, newPath in
+            stateManager.saveNavigationState(newPath)
+        }
+    }
+    
+    @ViewBuilder
+    private func routeView(for route: Route) -> some View {
+        switch route {
+        case .profile:
+            Text("Profile").navigationTitle("Profile")
+        case .editProfile:
+            Text("Edit Profile").navigationTitle("Edit")
+        case .changePassword:
+            Text("Change Password").navigationTitle("Password")
+        default:
+            Text("Unknown Route")
+        }
+    }
+}
+```
+
+This comprehensive navigation analysis demonstrates SwiftUI's modern navigation paradigms, performance optimization strategies, and state management techniques essential for senior-level iOS development interviews.
+
+---
