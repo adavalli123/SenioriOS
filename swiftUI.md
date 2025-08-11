@@ -14,6 +14,8 @@
 
 ## Core Concepts
 
+---
+
 ### Q1: What is SwiftUI and how does it differ from UIKit?
 
 **Answer:**
@@ -166,6 +168,8 @@ struct ContentView: View {
     }
 }
 ```
+
+---
 
 ### Q2: What is a View in SwiftUI?
 
@@ -338,6 +342,8 @@ struct ItemRow: View {
     }
 }
 ```
+
+---
 
 ### Q3: Explain the concept of "some View"
 
@@ -573,6 +579,8 @@ extension View {
 
 ## UI Components
 
+---
+
 ### Q4: How do you create and customize text in SwiftUI?
 
 **Answer:**
@@ -753,6 +761,8 @@ struct LocalizedHelperView: View {
     }
 }
 ```
+
+---
 
 ### Q5: How do you handle user input with buttons?
 
@@ -992,6 +1002,8 @@ struct StatefulButton: View {
 - How do you disable a button conditionally?
 - What's the difference between the button action closure and onTapGesture?
 - How do you create button styles that can be reused?
+
+---
 
 ### Q6: How do you work with Lists in SwiftUI?
 
@@ -1384,6 +1396,8 @@ extension View {
 
 ## Layout System
 
+---
+
 ### Q7: Explain HStack, VStack, and ZStack
 
 **Answer:**
@@ -1553,6 +1567,8 @@ struct SizingExample: View {
 - What happens when content doesn't fit in a stack?
 - How do you create custom alignments?
 
+---
+
 ### Q8: How does the frame modifier work?
 
 **Answer:**
@@ -1590,6 +1606,8 @@ struct FrameExamples: View {
 - What's the difference between `frame` and `fixedSize`?
 - How does frame interact with the parent view's layout?
 - When should you use `GeometryReader` instead of frame?
+
+---
 
 ### Q9: What is GeometryReader and when do you use it?
 
@@ -1633,6 +1651,8 @@ struct GeometryExample: View {
 ---
 
 ## Data Flow & State Management
+
+---
 
 ### Q10: Explain @State and when to use it
 
@@ -1958,6 +1978,8 @@ struct RestorableView: View {
     }
 }
 ```
+
+---
 
 ### Q11: What is @Binding and how does it work?
 
@@ -2386,6 +2408,8 @@ struct TemperatureView: View {
 - What's the difference between @State and @Binding?
 - How do you transform a binding's value?
 
+---
+
 ### Q12: Explain @ObservedObject, @StateObject, and @EnvironmentObject
 
 **Answer:**
@@ -2454,6 +2478,8 @@ struct ContentView: View {
 
 ## Navigation
 
+---
+
 ### Q13: How do you implement navigation in SwiftUI?
 
 **Answer:**
@@ -2518,6 +2544,8 @@ struct ProgrammaticNavigation: View {
 - How do you handle deep linking in SwiftUI navigation?
 - What's the difference between NavigationView and NavigationStack (iOS 16+)?
 - How do you pass data back from a detail view?
+
+---
 
 ### Q14: How do you present sheets and alerts?
 
@@ -2588,6 +2616,8 @@ struct SheetView: View {
 
 ## Practical Puzzles
 
+---
+
 ### Puzzle 1: Counter App with Reset
 Create a counter app that:
 - Displays a count starting at 0
@@ -2629,6 +2659,8 @@ struct CounterApp: View {
     }
 }
 ```
+
+---
 
 ### Puzzle 2: Todo List with Add/Delete
 Create a todo list that:
@@ -2687,6 +2719,8 @@ struct TodoApp: View {
     }
 }
 ```
+
+---
 
 ### Puzzle 3: Login Form with Validation
 Create a login form that:
@@ -2774,20 +2808,28 @@ struct LoginForm: View {
 
 ## Best Practices & Common Gotchas
 
+---
+
 ### Best Practice 1: State Management
 - Use the minimal scope for state (local @State when possible)
 - Prefer @StateObject over @ObservedObject for ownership
 - Use @EnvironmentObject sparingly for truly global state
+
+---
 
 ### Best Practice 2: Performance
 - Avoid heavy computations in body
 - Use lazy containers for large datasets
 - Consider view identity and unnecessary recreations
 
+---
+
 ### Best Practice 3: Accessibility
 - Always provide accessibility labels
 - Use semantic colors and fonts
 - Test with VoiceOver and Dynamic Type
+
+---
 
 ### Common Gotcha 1: View Identity
 ```swift
@@ -2803,6 +2845,8 @@ ForEach(items) { item in
 }
 ```
 
+---
+
 ### Common Gotcha 2: @State in Non-View Types
 ```swift
 // ❌ Don't do this
@@ -2815,6 +2859,8 @@ class MyClass: ObservableObject {
     @Published var value = 0
 }
 ```
+
+---
 
 ### Common Gotcha 3: Binding Performance
 ```swift
@@ -2832,6 +2878,8 @@ TextField("Name", text: $name)
 ---
 
 ## Advanced Topics
+
+---
 
 ### Custom View Modifiers
 ```swift
@@ -2852,6 +2900,8 @@ extension View {
 }
 ```
 
+---
+
 ### Custom Shapes
 ```swift
 struct Triangle: Shape {
@@ -2865,6 +2915,8 @@ struct Triangle: Shape {
     }
 }
 ```
+
+---
 
 ### Preference Keys
 ```swift
@@ -2880,6 +2932,8 @@ struct HeightPreferenceKey: PreferenceKey {
 ---
 
 ## Architecture & Real-World Patterns
+
+---
 
 ### MVVM with SwiftUI
 ```swift
@@ -2959,6 +3013,8 @@ struct ProfileView: View {
 }
 ```
 
+---
+
 ### Dependency Injection Pattern
 ```swift
 // ✅ Protocol-based dependency injection
@@ -3012,6 +3068,8 @@ struct ContentView: View {
 }
 ```
 
+---
+
 ### Repository Pattern
 ```swift
 // ✅ Repository pattern for data access
@@ -3056,6 +3114,8 @@ class PostRepository: PostRepositoryProtocol {
     }
 }
 ```
+
+---
 
 ### Error Handling Strategy
 ```swift
@@ -3123,6 +3183,8 @@ struct ErrorHandlingView: View {
     }
 }
 ```
+
+---
 
 ### Performance Optimization Patterns
 ```swift
@@ -3247,6 +3309,8 @@ struct PostRowView: View {
 
 ## Testing Strategies
 
+---
+
 ### Unit Testing ViewModels
 ```swift
 import XCTest
@@ -3304,6 +3368,8 @@ class MockUserService: UserServiceProtocol {
 }
 ```
 
+---
+
 ### UI Testing with ViewInspector
 ```swift
 import ViewInspector
@@ -3349,6 +3415,8 @@ class CounterViewTests: XCTestCase {
 
 ## Bonus Topics
 
+---
+
 ### Animations
 ```swift
 struct AnimationExample: View {
@@ -3368,6 +3436,8 @@ struct AnimationExample: View {
     }
 }
 ```
+
+---
 
 ### Custom Gestures
 ```swift
@@ -3403,6 +3473,8 @@ struct GestureExample: View {
 }
 ```
 
+---
+
 ### Testing SwiftUI Views
 ```swift
 import XCTest
@@ -3428,6 +3500,8 @@ class SwiftUITests: XCTestCase {
 
 ## Quick Reference Cheat Sheet
 
+---
+
 ### Property Wrappers
 - `@State` - Local mutable state
 - `@Binding` - Two-way connection to external state
@@ -3436,12 +3510,16 @@ class SwiftUITests: XCTestCase {
 - `@EnvironmentObject` - Access object from environment
 - `@Environment` - Access system environment values
 
+---
+
 ### Layout Containers
 - `VStack` - Vertical arrangement
 - `HStack` - Horizontal arrangement  
 - `ZStack` - Layered arrangement
 - `LazyVStack/LazyHStack` - Lazy loading
 - `LazyVGrid/LazyHGrid` - Grid layouts
+
+---
 
 ### Common Modifiers
 - `.padding()` - Add space around view
@@ -3450,6 +3528,8 @@ class SwiftUITests: XCTestCase {
 - `.frame()` - Set size constraints
 - `.clipShape()` - Clip to shape
 - `.shadow()` - Add shadow effect
+
+---
 
 ### Navigation & Presentation
 - `NavigationView` - Navigation container
